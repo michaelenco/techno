@@ -114,6 +114,9 @@ class MainActivity : AppCompatActivity() {
         } else {
             startService(Intent(applicationContext, PlayerService::class.java))
         }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.navigationBarColor = resources.getColor(R.color.black)
+        }
         bindService(
             Intent(this, PlayerService::class.java),
             serviceConnection,
