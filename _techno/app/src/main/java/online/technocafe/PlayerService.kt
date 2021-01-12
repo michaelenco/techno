@@ -299,11 +299,12 @@ class PlayerService : MediaBrowserServiceCompat() {
                 .setMediaSession(mediaSession.sessionToken)
         )
         val options = BitmapFactory.Options()
-        val bitmap = BitmapFactory.decodeResource(resources, R.mipmap.ic_techno_square, options)
+        val bitmap = BitmapFactory.decodeResource(resources, R.drawable.web_hi_res_512, options)
         builder.setSmallIcon(R.mipmap.ic_techno_round) //ic_launcher
         builder.setLargeIcon(bitmap)
         //builder.color = ContextCompat.getColor(this, R.color.black)
         builder.setShowWhen(false)
+            //  builder.
         builder.priority = NotificationCompat.PRIORITY_DEFAULT
         builder.setOnlyAlertOnce(true)
         builder.setChannelId(NOTIFICATION_DEFAULT_CHANNEL_ID)
