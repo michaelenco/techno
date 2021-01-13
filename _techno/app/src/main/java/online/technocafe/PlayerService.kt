@@ -13,20 +13,20 @@ import android.media.AudioAttributes
 import android.media.AudioFocusRequest
 import android.media.AudioManager
 import android.media.AudioManager.OnAudioFocusChangeListener
+import android.net.ConnectivityManager
+import android.net.Network
 import android.net.Uri
 import android.os.*
 import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.media.MediaBrowserServiceCompat
 import androidx.media.session.MediaButtonReceiver
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.source.TrackGroupArray
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import org.json.JSONObject
@@ -40,8 +40,10 @@ private val NOTIFICATION_ID = 404
 class PlayerService : MediaBrowserServiceCompat() {
     private lateinit var exoPlayer: SimpleExoPlayer
     private var audioFocusRequested = false
+    private var disconnectWhilePlying = false
     private lateinit var audioFocusRequest: AudioFocusRequest
     private lateinit var audioManager: AudioManager
+    private lateinit var connectivityManager: ConnectivityManager
     private lateinit var mediaSession: MediaSessionCompat
     private val metadataBuilder = MediaMetadataCompat.Builder()
     private val stateBuilder = PlaybackStateCompat.Builder().setActions(
@@ -56,7 +58,6 @@ class PlayerService : MediaBrowserServiceCompat() {
     private var title = ""
     var currentState = PlaybackStateCompat.STATE_STOPPED
 
-    private var streamInfoHandler = Handler(Looper.myLooper()!!)
     private var pollingService = object: Runnable {
         override fun run() {
             if (currentState == PlaybackStateCompat.STATE_PLAYING) {
@@ -176,7 +177,6 @@ class PlayerService : MediaBrowserServiceCompat() {
             refreshNotificationAndForegroundStatus(currentState)
             Thread(pollingService).start()
         }
-
         override fun onPause() {
             if (currentState == PlaybackStateCompat.STATE_PAUSED) {
                 return
@@ -311,8 +311,27 @@ class PlayerService : MediaBrowserServiceCompat() {
         return builder.build()
     }
 
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun onCreate() {
         super.onCreate()
+        connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        connectivityManager.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                if (network != null && currentState == PlaybackStateCompat.STATE_PAUSED) {
+                    mediaSession.controller.transportControls.play()
+                    disconnectWhilePlying = false
+                    super.onAvailable(network)
+                }
+            }
+
+            override fun onLost(network: Network) {
+                if (network != null && currentState == PlaybackStateCompat.STATE_PLAYING) {
+                    mediaSession.controller.transportControls.pause()
+                    disconnectWhilePlying = true
+                    super.onLost(network)
+                }
+            }
+        })
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationChannel = NotificationChannel(

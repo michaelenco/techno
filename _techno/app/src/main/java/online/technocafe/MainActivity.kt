@@ -4,6 +4,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.net.ConnectivityManager
 import android.os.*
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
@@ -12,11 +13,6 @@ import android.webkit.WebView
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import online.technocafe.PlayerService.PlayerServiceBinder
-
-
-const val MSG_STARTED = 1
-const val MSG_STOPPED = 2
-const val MSG_STATUS = 3
 
 const val TECHNO_STREAM_URL = "http://212.109.198.36:8000"
 const val MINI_STREAM_URL = "http://212.109.198.36:9000"
