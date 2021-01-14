@@ -141,7 +141,7 @@ class PlayerService : MediaBrowserServiceCompat() {
     private val mediaSessionCallback: MediaSessionCompat.Callback = object : MediaSessionCompat.Callback() {
         private var currentUri: Uri? = null
         override fun onPlay() {
-            if (currentState == PlaybackStateCompat.STATE_PLAYING) {
+            if (currentState == PlaybackStateCompat.STATE_PLAYING || user_set_pause) {
                 return
             }
             if (!exoPlayer.playWhenReady) {

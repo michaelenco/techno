@@ -18,6 +18,7 @@ const val TECHNO_STREAM_URL = "http://212.109.198.36:8000"
 const val MINI_STREAM_URL = "http://212.109.198.36:9000"
 const val TECHNO_STREAM_INFO_URL = "http://technocafe.online/json.php"
 const val MINI_STREAM_INFO_URL = "http://technocafe.online/json2.php"
+var user_set_pause = false;
 
 class WebAppInterface(
         private var playerServiceBinder: PlayerService.PlayerServiceBinder,
@@ -25,6 +26,7 @@ class WebAppInterface(
     @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     @JavascriptInterface
     fun play(channel: String) {
+        user_set_pause = false
         if (channel == "techno") {
             playerServiceBinder.streamUrl = TECHNO_STREAM_URL
             playerServiceBinder.streamInfoUrl = TECHNO_STREAM_INFO_URL
@@ -41,6 +43,7 @@ class WebAppInterface(
     }
     @JavascriptInterface
     fun stop() {
+        user_set_pause = true
         val mainThreadHandler = Handler(Looper.getMainLooper())
         mainThreadHandler.post { mediaController.transportControls.pause() }
     }
