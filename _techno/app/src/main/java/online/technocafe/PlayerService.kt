@@ -319,14 +319,14 @@ class PlayerService : MediaBrowserServiceCompat() {
         connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         connectivityManager.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
-                if (network != null && currentState == PlaybackStateCompat.STATE_PAUSED) {
+                if (currentState == PlaybackStateCompat.STATE_PAUSED) {
                     mediaSession.controller.transportControls.play()
                     disconnectWhilePlying = false
                     super.onAvailable(network)
                 }
             }
             override fun onLost(network: Network) {
-                if (network != null && currentState == PlaybackStateCompat.STATE_PLAYING) {
+                if (currentState == PlaybackStateCompat.STATE_PLAYING) {
                     mediaSession.controller.transportControls.pause()
                     disconnectWhilePlying = true
                     super.onLost(network)
