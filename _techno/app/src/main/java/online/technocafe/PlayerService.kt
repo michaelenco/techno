@@ -30,6 +30,7 @@ import com.google.android.exoplayer2.*
 import com.google.android.exoplayer2.source.TrackGroupArray
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import org.json.JSONObject
+import java.lang.Exception
 import java.lang.Thread.sleep
 import java.net.URL
 
@@ -61,11 +62,15 @@ class PlayerService : MediaBrowserServiceCompat() {
     private var pollingService = object: Runnable {
         override fun run() {
             if (currentState == PlaybackStateCompat.STATE_PLAYING) {
-                val info = URL(_streamInfoUrl).readText()
-                val jsonObject = JSONObject(info)
-                val attributes = jsonObject.getJSONObject("@attributes")
-                var newTitle = attributes.getString("CASTTITLE")
-                if (newTitle != title) {
+                var newTitle:String? = null
+                try {
+                    val info = URL(_streamInfoUrl).readText()
+                    val jsonObject = JSONObject(info)
+                    val attributes = jsonObject.getJSONObject("@attributes")
+                    newTitle = attributes.getString("CASTTITLE")
+                } catch (e:Exception) {}
+
+                if (newTitle != null && newTitle != title) {
                     title = newTitle
                     Handler(Looper.getMainLooper()).post(Runnable {
                         refreshNotificationAndForegroundStatus(currentState)
@@ -76,8 +81,6 @@ class PlayerService : MediaBrowserServiceCompat() {
             }
         }
     }
-
-
     public inner class PlayerServiceBinder : Binder() {
         val mediaSessionToken: MediaSessionCompat.Token
             get() = mediaSession.sessionToken
@@ -99,12 +102,13 @@ class PlayerService : MediaBrowserServiceCompat() {
         val isPlaying: Boolean
             get() = currentState == PlaybackStateCompat.STATE_PLAYING
     }
-
     private val audioFocusChangeListener = OnAudioFocusChangeListener { focusChange ->
         when (focusChange) {
             AudioManager.AUDIOFOCUS_GAIN -> mediaSessionCallback.onPlay()
+            AudioManager.AUDIOFOCUS_LOSS -> mediaSessionCallback.onStop()
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> mediaSessionCallback.onPause()
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> mediaSessionCallback.onPause()
-            else -> mediaSessionCallback.onPause()
+            else -> mediaSessionCallback.onStop()
         }
     }
 
@@ -116,14 +120,12 @@ class PlayerService : MediaBrowserServiceCompat() {
             }
         }
     }
-
     private val exoPlayerListener = object : Player.EventListener {
         override fun onTracksChanged(
             trackGroups: TrackGroupArray,
             trackSelections: TrackSelectionArray
         ) {
         }
-
         override fun onLoadingChanged(isLoading: Boolean) {}
         override fun onPlayerStateChanged(
             playWhenReady: Boolean,
@@ -133,11 +135,9 @@ class PlayerService : MediaBrowserServiceCompat() {
                 mediaSessionCallback.onSkipToNext()
             }
         }
-
 //        override fun onPlayerError(error: ExoPlaybackException) {}
 //        override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters) {}
     }
-
     private val mediaSessionCallback: MediaSessionCompat.Callback = object : MediaSessionCompat.Callback() {
         private var currentUri: Uri? = null
         override fun onPlay() {
@@ -195,7 +195,6 @@ class PlayerService : MediaBrowserServiceCompat() {
             currentState = PlaybackStateCompat.STATE_PAUSED
             refreshNotificationAndForegroundStatus(currentState)
         }
-
         override fun onStop() {
             if (exoPlayer.playWhenReady) {
                 exoPlayer.playWhenReady = false
@@ -221,13 +220,11 @@ class PlayerService : MediaBrowserServiceCompat() {
             refreshNotificationAndForegroundStatus(currentState)
             stopSelf()
         }
-
         private fun prepareToPlay(uri: String) {
             exoPlayer.setMediaItem(MediaItem.fromUri(uri))
             exoPlayer.prepare()
         }
     }
-
     private fun updateMetadataFromTrack() {
         metadataBuilder.putBitmap(
             MediaMetadataCompat.METADATA_KEY_ART,
@@ -282,10 +279,8 @@ class PlayerService : MediaBrowserServiceCompat() {
                     this,
                     PlaybackStateCompat.ACTION_PLAY_PAUSE
                 )
-
             )
         }
-
         builder.setStyle(
             androidx.media.app.NotificationCompat.MediaStyle()
                 .setShowActionsInCompactView(0)
@@ -302,15 +297,12 @@ class PlayerService : MediaBrowserServiceCompat() {
         val bitmap = BitmapFactory.decodeResource(resources, R.drawable.web_hi_res_512, options)
         builder.setSmallIcon(R.mipmap.ic_techno_round) //ic_launcher
         builder.setLargeIcon(bitmap)
-        //builder.color = ContextCompat.getColor(this, R.color.black)
         builder.setShowWhen(false)
-            //  builder.
         builder.priority = NotificationCompat.PRIORITY_DEFAULT
         builder.setOnlyAlertOnce(true)
         builder.setChannelId(NOTIFICATION_DEFAULT_CHANNEL_ID)
         return builder.build()
     }
-
     @RequiresApi(Build.VERSION_CODES.N)
     override fun onCreate() {
         super.onCreate()
@@ -323,7 +315,6 @@ class PlayerService : MediaBrowserServiceCompat() {
                     super.onAvailable(network)
                 }
             }
-
             override fun onLost(network: Network) {
                 if (network != null && currentState == PlaybackStateCompat.STATE_PLAYING) {
                     mediaSession.controller.transportControls.pause()
@@ -332,14 +323,12 @@ class PlayerService : MediaBrowserServiceCompat() {
                 }
             }
         })
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val notificationChannel = NotificationChannel(
                 NOTIFICATION_DEFAULT_CHANNEL_ID,
                 "TECHNOCAFE",
                 NotificationManager.IMPORTANCE_DEFAULT
             )
-
             val notificationManager =
                     getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(notificationChannel)
@@ -363,7 +352,6 @@ class PlayerService : MediaBrowserServiceCompat() {
         mediaSession.setCallback(mediaSessionCallback)
 
         val appContext = applicationContext
-
         val activityIntent = Intent(appContext, MainActivity::class.java)
         mediaSession.setSessionActivity(PendingIntent.getActivity(appContext, 0, activityIntent, 0))
 
@@ -381,7 +369,6 @@ class PlayerService : MediaBrowserServiceCompat() {
         )
 
         exoPlayer = SimpleExoPlayer.Builder(this).build()
-
         exoPlayer.addListener(exoPlayerListener)
     }
 
