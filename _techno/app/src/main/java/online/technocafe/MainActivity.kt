@@ -100,11 +100,9 @@ class MainActivity : AppCompatActivity() {
             mediaController = null
         }
     }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(Intent(applicationContext, PlayerService::class.java))
         } else {
