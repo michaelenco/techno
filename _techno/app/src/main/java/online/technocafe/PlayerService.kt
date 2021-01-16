@@ -21,6 +21,7 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -58,6 +59,7 @@ class PlayerService : MediaBrowserServiceCompat() {
     private var _channel = ""
     private var title = ""
     var currentState = PlaybackStateCompat.STATE_STOPPED
+    var wasMuted = false
 
     private var pollingService = object: Runnable {
         override fun run() {
@@ -104,10 +106,16 @@ class PlayerService : MediaBrowserServiceCompat() {
     }
     private val audioFocusChangeListener = OnAudioFocusChangeListener { focusChange ->
         when (focusChange) {
-            AudioManager.AUDIOFOCUS_GAIN -> mediaSessionCallback.onPlay()
+            AudioManager.AUDIOFOCUS_GAIN -> {
+                if(wasMuted) {
+                    mediaSessionCallback.onPlay()
+                }
+            }
             AudioManager.AUDIOFOCUS_LOSS -> mediaSessionCallback.onStop()
-            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> mediaSessionCallback.onPause()
-            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> mediaSessionCallback.onPause()
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+                wasMuted = true
+                mediaSession.controller.transportControls.pause()
+            }
             else -> mediaSessionCallback.onStop()
         }
     }
@@ -144,6 +152,7 @@ class PlayerService : MediaBrowserServiceCompat() {
             if (currentState == PlaybackStateCompat.STATE_PLAYING) {
                 return
             }
+            wasMuted = false
             if (!exoPlayer.playWhenReady) {
                 prepareToPlay(_streamUrl)
                 if (!audioFocusRequested) {
@@ -342,14 +351,15 @@ class PlayerService : MediaBrowserServiceCompat() {
             audioFocusRequest = AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
                     .setOnAudioFocusChangeListener(audioFocusChangeListener)
                     .setAcceptsDelayedFocusGain(false)
-                    .setWillPauseWhenDucked(true)
+                    .setWillPauseWhenDucked(false)
                     .setAudioAttributes(audioAttributes)
                     .build()
         }
 
         audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
         mediaSession = MediaSessionCompat(this, "PlayerService")
-        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
+        mediaSession.setFlags(MediaSessionCompat.FLAG_HANDLES_MEDIA_BUTTONS or
+                MediaSessionCompat.FLAG_HANDLES_TRANSPORT_CONTROLS)
         mediaSession.setCallback(mediaSessionCallback)
 
         val appContext = applicationContext
