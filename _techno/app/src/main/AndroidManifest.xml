@@ -9,9 +9,9 @@
 
     <application
         android:allowBackup="false"
-        android:icon="@mipmap/ic_techno_square"
+        android:icon="@mipmap/ic_launcher"
         android:label="TECHNOCAFE"
-        android:roundIcon="@mipmap/ic_techno_round"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.NoActionBar"
         android:usesCleartextTraffic="true">
