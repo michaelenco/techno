@@ -37,7 +37,7 @@ import java.net.URL
 
 
 private const val NOTIFICATION_DEFAULT_CHANNEL_ID = "default_channel"
-private val NOTIFICATION_ID = 404
+private const val NOTIFICATION_ID = 404
 
 class PlayerService : MediaBrowserServiceCompat() {
     private lateinit var exoPlayer: SimpleExoPlayer
@@ -143,18 +143,25 @@ class PlayerService : MediaBrowserServiceCompat() {
                 mediaSessionCallback.onSkipToNext()
             }
         }
-//        override fun onPlayerError(error: ExoPlaybackException) {}
+        override fun onPlayerError(error: ExoPlaybackException) {
+
+            currentState = PlaybackStateCompat.STATE_ERROR
+            mediaSessionCallback.onPause()
+        }
 //        override fun onPlaybackParametersChanged(playbackParameters: PlaybackParameters) {}
     }
     private val mediaSessionCallback: MediaSessionCompat.Callback = object : MediaSessionCompat.Callback() {
-        private var currentUri: Uri? = null
         override fun onPlay() {
             if (currentState == PlaybackStateCompat.STATE_PLAYING) {
                 return
             }
             wasMuted = false
+            disconnectWhilePlying = false
             if (!exoPlayer.playWhenReady) {
-                prepareToPlay(_streamUrl)
+                exoPlayer.playWhenReady = true
+                var mi: MediaItem = MediaItem.fromUri(_streamUrl)
+                exoPlayer.setMediaItem(mi)
+                exoPlayer.prepare()
                 if (!audioFocusRequested) {
                     audioFocusRequested = true
                     val audioFocusResult: Int = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -173,7 +180,7 @@ class PlayerService : MediaBrowserServiceCompat() {
                     becomingNoisyReceiver,
                     IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY)
                 )
-                exoPlayer.playWhenReady = true
+
             }
             mediaSession.setPlaybackState(
                 stateBuilder.setState(
@@ -228,10 +235,6 @@ class PlayerService : MediaBrowserServiceCompat() {
             currentState = PlaybackStateCompat.STATE_STOPPED
             refreshNotificationAndForegroundStatus(currentState)
             stopSelf()
-        }
-        private fun prepareToPlay(uri: String) {
-            exoPlayer.setMediaItem(MediaItem.fromUri(uri))
-            exoPlayer.prepare()
         }
     }
     private fun updateMetadataFromTrack() {
@@ -319,7 +322,7 @@ class PlayerService : MediaBrowserServiceCompat() {
         connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         connectivityManager.registerDefaultNetworkCallback(object : ConnectivityManager.NetworkCallback() {
             override fun onAvailable(network: Network) {
-                if (currentState == PlaybackStateCompat.STATE_PAUSED) {
+                if (currentState == PlaybackStateCompat.STATE_PAUSED && disconnectWhilePlying) {
                     mediaSession.controller.transportControls.play()
                     disconnectWhilePlying = false
                     super.onAvailable(network)
