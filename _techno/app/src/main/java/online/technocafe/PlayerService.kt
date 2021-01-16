@@ -295,6 +295,7 @@ class PlayerService : MediaBrowserServiceCompat() {
         )
         val options = BitmapFactory.Options()
         val bitmap = BitmapFactory.decodeResource(resources, R.drawable.web_hi_res_512, options)
+        builder.setCategory(NotificationCompat.CATEGORY_TRANSPORT)
         builder.setSmallIcon(R.mipmap.ic_techno_round) //ic_launcher
         builder.setLargeIcon(bitmap)
         builder.setShowWhen(false)
@@ -327,7 +328,7 @@ class PlayerService : MediaBrowserServiceCompat() {
             val notificationChannel = NotificationChannel(
                 NOTIFICATION_DEFAULT_CHANNEL_ID,
                 "TECHNOCAFE",
-                NotificationManager.IMPORTANCE_DEFAULT
+                NotificationManager.IMPORTANCE_LOW
             )
             val notificationManager =
                     getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
