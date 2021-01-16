@@ -237,17 +237,11 @@ class PlayerService : MediaBrowserServiceCompat() {
     private fun updateMetadataFromTrack() {
         metadataBuilder.putBitmap(
             MediaMetadataCompat.METADATA_KEY_ART,
-            BitmapFactory.decodeResource(resources, android.R.drawable.ic_dialog_info)
+            BitmapFactory.decodeResource(resources, R.drawable.web_hi_res_512)
         );
         metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
-        metadataBuilder.putString(
-            MediaMetadataCompat.METADATA_KEY_ARTIST,
-            _channel
-        )
-        metadataBuilder.putLong(
-            MediaMetadataCompat.METADATA_KEY_DURATION,
-            -1L
-        )
+        metadataBuilder.putString(MediaMetadataCompat.METADATA_KEY_ARTIST,_channel)
+        metadataBuilder.putLong(MediaMetadataCompat.METADATA_KEY_DURATION,-1L)
         mediaSession.setMetadata(metadataBuilder.build())
     }
 
