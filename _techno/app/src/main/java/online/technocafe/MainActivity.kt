@@ -4,10 +4,12 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.graphics.Color
 import android.net.ConnectivityManager
 import android.os.*
 import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.PlaybackStateCompat
+import android.view.View
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import androidx.annotation.RequiresApi
@@ -86,13 +88,10 @@ class MainActivity : AppCompatActivity() {
                 playerServiceBinder!!.mediaSessionToken
             )
             mediaController!!.registerCallback(callback)
-
-            webView = findViewById(R.id.webview)!!
-            webView.settings.javaScriptEnabled = true
             val webAppInterface = WebAppInterface(playerServiceBinder!!, mediaController!!)
             webView.addJavascriptInterface(webAppInterface, "Android")
             webView.loadUrl("http://technocafe.online/")
-            //callback.onPlaybackStateChanged(mediaController!!.playbackState)
+            webView.visibility = View.VISIBLE
         }
         override fun onServiceDisconnected(name: ComponentName) {
             playerServiceBinder = null
@@ -103,6 +102,12 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        webView = findViewById(R.id.webview)!!
+        webView.settings.javaScriptEnabled = true
+        webView.visibility = View.GONE
+        webView.setBackgroundColor(Color.TRANSPARENT)
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(Intent(applicationContext, PlayerService::class.java))
         } else {
