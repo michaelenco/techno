@@ -273,7 +273,7 @@ class PlayerService : MediaBrowserServiceCompat() {
 
         if (playbackState == PlaybackStateCompat.STATE_PLAYING) {
             builder.addAction(
-                android.R.drawable.ic_media_pause,
+                R.drawable.exo_icon_pause,
                 "pause",
                 MediaButtonReceiver.buildMediaButtonPendingIntent(
                     this,
@@ -282,7 +282,7 @@ class PlayerService : MediaBrowserServiceCompat() {
             )
         } else {
             builder.addAction(
-                android.R.drawable.ic_media_play,
+                R.drawable.exo_icon_play,
                 "play",
                 MediaButtonReceiver.buildMediaButtonPendingIntent(
                     this,
@@ -290,6 +290,14 @@ class PlayerService : MediaBrowserServiceCompat() {
                 )
             )
         }
+        builder.addAction(
+            R.drawable.exo_icon_stop,
+            "stop",
+            MediaButtonReceiver.buildMediaButtonPendingIntent(
+                this,
+                PlaybackStateCompat.ACTION_STOP
+            )
+        )
         builder.setStyle(
             androidx.media.app.NotificationCompat.MediaStyle()
                 .setShowActionsInCompactView(0)
