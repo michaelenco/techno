@@ -111,7 +111,7 @@ class PlayerService : MediaBrowserServiceCompat() {
                     mediaSessionCallback.onPlay()
                 }
             }
-            AudioManager.AUDIOFOCUS_LOSS -> mediaSessionCallback.onStop()
+            AudioManager.AUDIOFOCUS_LOSS -> mediaSessionCallback.onPause()
             AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
                 wasMuted = true
                 mediaSession.controller.transportControls.pause()
