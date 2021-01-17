@@ -14,10 +14,8 @@ import android.support.v4.media.session.PlaybackStateCompat
 import android.view.View
 import android.webkit.*
 import android.widget.TextView
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import online.technocafe.PlayerService.PlayerServiceBinder
-import java.lang.Exception
 
 const val TECHNO_STREAM_URL = "http://212.109.198.36:8000"
 const val MINI_STREAM_URL = "http://212.109.198.36:9000"
@@ -27,7 +25,7 @@ const val MINI_STREAM_INFO_URL = "http://technocafe.online/json2.php"
 class WebAppInterface(
         private var playerServiceBinder: PlayerService.PlayerServiceBinder,
         private var mediaController: MediaControllerCompat) {
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
+
     @JavascriptInterface
     fun play(channel: String) {
         if (channel == "techno") {
@@ -104,7 +102,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.N)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -155,7 +152,6 @@ class MainActivity : AppCompatActivity() {
                     runOnUiThread {
                         webView.loadUrl("http://technocafe.online/")
                     }
-
                     super.onAvailable(network)
                 }
             }

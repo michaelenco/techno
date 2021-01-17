@@ -22,7 +22,6 @@ import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.media.MediaBrowserServiceCompat
@@ -319,7 +318,7 @@ class PlayerService : MediaBrowserServiceCompat() {
         builder.setSmallIcon(R.drawable.ic_stat_name)
         return builder.build()
     }
-    @RequiresApi(Build.VERSION_CODES.N)
+
     override fun onCreate() {
         super.onCreate()
         connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager

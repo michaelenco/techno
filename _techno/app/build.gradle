@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId "online.technocafe"
-        minSdkVersion 16
+        minSdkVersion 25
         targetSdkVersion 30
         versionCode 21
         versionName "0.1"
