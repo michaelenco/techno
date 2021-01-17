@@ -108,15 +108,19 @@ class PlayerService : MediaBrowserServiceCompat() {
         when (focusChange) {
             AudioManager.AUDIOFOCUS_GAIN -> {
                 if(wasMuted) {
-                    mediaSessionCallback.onPlay()
+                    mediaSession.controller.transportControls.play()
                 }
             }
-            AudioManager.AUDIOFOCUS_LOSS -> mediaSessionCallback.onPause()
-            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
-                wasMuted = true
+            AudioManager.AUDIOFOCUS_LOSS -> {
                 mediaSession.controller.transportControls.pause()
             }
-            else -> mediaSessionCallback.onStop()
+            AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
+                if (currentState == PlaybackStateCompat.STATE_PLAYING) {
+                    wasMuted = true
+                    mediaSession.controller.transportControls.pause()
+                }
+            }
+            else -> mediaSession.controller.transportControls.stop()
         }
     }
 
@@ -124,7 +128,7 @@ class PlayerService : MediaBrowserServiceCompat() {
         override fun onReceive(context: Context, intent: Intent) {
             // Disconnecting headphones - stop playback
             if (AudioManager.ACTION_AUDIO_BECOMING_NOISY == intent.action) {
-                mediaSessionCallback.onPause()
+                mediaSession.controller.transportControls.pause()
             }
         }
     }
@@ -307,7 +311,6 @@ class PlayerService : MediaBrowserServiceCompat() {
                 )
                 .setMediaSession(mediaSession.sessionToken)
         )
-        val options = BitmapFactory.Options()
         builder.setCategory(NotificationCompat.CATEGORY_TRANSPORT)
         builder.setShowWhen(false)
         builder.priority = NotificationCompat.PRIORITY_DEFAULT
