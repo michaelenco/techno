@@ -74,7 +74,7 @@ class PlayerService : MediaBrowserServiceCompat() {
                 if (newTitle != null && newTitle != title) {
                     title = newTitle
                     Handler(Looper.getMainLooper()).post(Runnable {
-                        refreshNotificationAndForegroundStatus(currentState)
+                        refreshNotificationAndForegroundStatus()
                     })
                 }
                 sleep(5000)
@@ -193,7 +193,7 @@ class PlayerService : MediaBrowserServiceCompat() {
                 ).build()
             )
             currentState = PlaybackStateCompat.STATE_PLAYING
-            refreshNotificationAndForegroundStatus(currentState)
+            refreshNotificationAndForegroundStatus()
             Thread(pollingService).start()
         }
         override fun onPause() {
@@ -212,7 +212,7 @@ class PlayerService : MediaBrowserServiceCompat() {
                 ).build()
             )
             currentState = PlaybackStateCompat.STATE_PAUSED
-            refreshNotificationAndForegroundStatus(currentState)
+            refreshNotificationAndForegroundStatus()
         }
         override fun onStop() {
             if (exoPlayer.playWhenReady) {
@@ -236,7 +236,7 @@ class PlayerService : MediaBrowserServiceCompat() {
                 ).build()
             )
             currentState = PlaybackStateCompat.STATE_STOPPED
-            refreshNotificationAndForegroundStatus(currentState)
+            refreshNotificationAndForegroundStatus()
             stopSelf()
         }
     }
@@ -251,15 +251,15 @@ class PlayerService : MediaBrowserServiceCompat() {
         mediaSession.setMetadata(metadataBuilder.build())
     }
 
-    private fun refreshNotificationAndForegroundStatus(playbackState: Int) {
+    private fun refreshNotificationAndForegroundStatus() {
         updateMetadataFromTrack()
-        when (playbackState) {
+        when (currentState) {
             PlaybackStateCompat.STATE_PLAYING -> {
-                startForeground(NOTIFICATION_ID, getNotification(playbackState))
+                startForeground(NOTIFICATION_ID, getNotification(currentState))
             }
             PlaybackStateCompat.STATE_PAUSED -> {
                 NotificationManagerCompat.from(this)
-                    .notify(NOTIFICATION_ID, getNotification(playbackState))
+                    .notify(NOTIFICATION_ID, getNotification(currentState))
                 stopForeground(false)
             }
             else -> {
@@ -386,6 +386,7 @@ class PlayerService : MediaBrowserServiceCompat() {
 
         exoPlayer = SimpleExoPlayer.Builder(this).build()
         exoPlayer.addListener(exoPlayerListener)
+        refreshNotificationAndForegroundStatus()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

@@ -126,6 +126,12 @@ class MainActivity : AppCompatActivity() {
                 webView.visibility = View.VISIBLE
             }
 
+            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                val intent = Intent(Intent.ACTION_VIEW, request!!.url)
+                startActivity(intent)
+                return true
+            }
+
         }
 
         connectionLost = findViewById(R.id.no_internet)!!

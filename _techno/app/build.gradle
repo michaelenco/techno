@@ -9,9 +9,9 @@ android {
 
     defaultConfig {
         applicationId "online.technocafe"
-        minSdkVersion 25
+        minSdkVersion 26
         targetSdkVersion 30
-        versionCode 21
+        versionCode 22
         versionName "0.1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
